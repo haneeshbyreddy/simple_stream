@@ -10,6 +10,8 @@ present from, then share that one window in Google Meet / Zoom / Teams.
   plus a viewer window with a grid of the selected devices. **Click a tile to fill the window with it**,
   click again to go back to the grid.
 
+**New here? Open the [picture guide](docs/guide.html)** (download it and open it in a browser).
+
 ![Viewer: grid of devices, click one to fill the window](docs/viewer.png)
 ![Terminal app](docs/tui.png)
 

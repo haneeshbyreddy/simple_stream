@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simple Stream Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root {
+  --paper: #F4F7FF;
+  --card: #FFFFFF;
+  --ink: #1A1E3A;
+  --soft: #5A6187;
+  --line: #1A1E3A;
+  --blue: #2F6BFF;
+  --blue-soft: #DCE6FF;
+  --sun: #FFC933;
+  --sun-soft: #FFF1C4;
+  --mint: #19B89A;
+  --mint-soft: #D2F5EC;
+  --coral: #FF5E5B;
+  --coral-soft: #FFE0DF;
+  --term: #14172B;
+  --term-text: #E6E9FF;
+  --shadow: 5px 5px 0 var(--line);
+  --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: #12152A; --card: #1C2040; --ink: #EEF1FF; --soft: #A9B0D6; --line: #070914;
+    --blue-soft: #243466; --sun-soft: #4A3D14; --mint-soft: #123F37; --coral-soft: #4A2020;
+    --term: #0A0C18;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #12152A; --card: #1C2040; --ink: #EEF1FF; --soft: #A9B0D6; --line: #070914;
+  --blue-soft: #243466; --sun-soft: #4A3D14; --mint-soft: #123F37; --coral-soft: #4A2020;
+  --term: #0A0C18;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 400 17px/1.55 var(--body);
+  background-image: radial-gradient(color-mix(in srgb, var(--soft) 22%, transparent) 1.2px, transparent 1.3px);
+  background-size: 22px 22px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 60px; display: grid; gap: 34px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.05; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+
+/* hero */
+.hero { display: grid; gap: 14px; justify-items: center; text-align: center; padding-block: 8px 0; }
+.badge { font: 600 13px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; background: var(--sun); color: #1A1E3A;
+  padding: 8px 14px; border-radius: 99px; border: 2.5px solid var(--line); box-shadow: 3px 3px 0 var(--line); transform: rotate(-2deg); }
+.hero h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 800; letter-spacing: -.01em; }
+.hero h1 span { color: var(--blue); }
+.hero .lead { font-size: clamp(18px, 2.4vw, 22px); color: var(--soft); max-width: 34ch; }
+.hero-art { width: 100%; max-width: 900px; margin-top: 6px; }
+
+/* panels */
+.panel { background: var(--card); border: 3px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); padding: 26px; display: grid; gap: 18px; }
+.idea { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.idea > div { display: grid; justify-items: center; text-align: center; gap: 8px; }
+.idea svg { width: 100%; max-width: 180px; height: auto; }
+.idea b { font-family: var(--display); font-size: 22px; }
+.idea small { color: var(--soft); font-size: 15px; }
+.eq { font: 800 30px var(--display); color: var(--soft); align-self: center; }
+
+.steps-title { font-size: clamp(30px, 5vw, 44px); text-align: center; }
+.step { display: grid; grid-template-columns: 76px 1fr; gap: 20px; align-items: start; }
+.num { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font: 800 34px var(--display);
+  border: 3px solid var(--line); box-shadow: 3px 3px 0 var(--line); color: #1A1E3A; }
+.s1 .num { background: var(--sun); } .s2 .num { background: var(--mint); } .s3 .num { background: var(--blue); color: #fff; }
+.s4 .num { background: var(--coral); color: #fff; } .s5 .num { background: var(--sun); } .s6 .num { background: var(--mint); }
+.step-body { display: grid; gap: 14px; min-width: 0; }
+.step h2 { font-size: clamp(26px, 3.6vw, 34px); }
+.step .say { color: var(--soft); font-size: 17px; max-width: 60ch; }
+.split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; align-items: center; }
+.split svg { width: 100%; height: auto; }
+
+/* commands */
+.cmd { background: var(--term); color: var(--term-text); border-radius: 14px; border: 3px solid var(--line);
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; }
+.cmd code { font: 500 14px/1.5 var(--mono); overflow-x: auto; white-space: nowrap; padding-block: 4px; scrollbar-width: thin; }
+.cmd code .p { color: #7CF2C9; user-select: none; }
+.cmd code .hl { color: var(--sun); }
+.copy { font: 600 14px var(--body); background: var(--sun); color: #1A1E3A; border: 2.5px solid #070914; border-radius: 10px;
+  padding: 8px 14px; cursor: pointer; box-shadow: 2px 2px 0 #070914; }
+.copy:active { transform: translate(2px, 2px); box-shadow: none; }
+.copy:focus-visible, .row:focus-visible, .tile:focus-visible, .key:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.tip { display: flex; gap: 12px; align-items: flex-start; background: var(--sun-soft); border: 2.5px dashed var(--line); border-radius: 14px; padding: 12px 14px; font-size: 15.5px; }
+.tip b { font-family: var(--display); font-size: 18px; white-space: nowrap; }
+.checks { display: flex; flex-wrap: wrap; gap: 10px; }
+.check { display: flex; align-items: center; gap: 8px; background: var(--mint-soft); border: 2.5px solid var(--line); border-radius: 99px; padding: 6px 14px 6px 8px; font-weight: 500; font-size: 15.5px; }
+.check i { width: 24px; height: 24px; border-radius: 50%; background: var(--mint); display: grid; place-items: center; font-style: normal; color: #fff; font-weight: 700; font-size: 14px; }
+
+/* meet mock */
+.meet { background: #202124; border: 3px solid var(--line); border-radius: 16px; overflow: hidden; color: #e8eaed; font-size: 14px; }
+.meet-top { display: flex; justify-content: space-between; padding: 10px 14px; color: #9aa0a6; }
+.meet-flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 6px 14px 14px; }
+.meet-flow span { background: #3c4043; border-radius: 99px; padding: 8px 14px; }
+.meet-flow span.pick { background: #8ab4f8; color: #202124; font-weight: 600; outline: 3px solid var(--sun); }
+.meet-flow em { font-style: normal; color: #9aa0a6; font-size: 18px; }
+.meet-bar { display: flex; justify-content: center; gap: 12px; padding: 12px; background: #171717; }
+.meet-bar i { width: 40px; height: 40px; border-radius: 50%; background: #3c4043; display: grid; place-items: center; font-style: normal; }
+.meet-bar i.present { background: #8ab4f8; outline: 3px solid var(--sun); }
+.meet-bar i.end { background: #ea4335; width: 56px; border-radius: 99px; }
+
+/* demo */
+.demo { display: grid; grid-template-columns: .85fr 1.15fr; gap: 18px; }
+.win { border: 3px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.win-bar { display: flex; align-items: center; gap: 7px; padding: 8px 12px; background: var(--blue-soft); border-bottom: 3px solid var(--line); font: 600 13px var(--body); }
+.win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--line); }
+.win-bar i:nth-child(1) { background: var(--coral); } .win-bar i:nth-child(2) { background: var(--sun); } .win-bar i:nth-child(3) { background: var(--mint); }
+.win-bar span { margin-left: 6px; }
+.term { background: var(--term); color: var(--term-text); font: 500 13.5px/1.4 var(--mono); padding: 12px; display: grid; gap: 6px; align-content: start; }
+.term .head { color: #8C93C2; display: grid; grid-template-columns: 18px 18px 1fr auto; gap: 8px; padding-inline: 8px; }
+.row { display: grid; grid-template-columns: 18px 18px 1fr auto; gap: 8px; align-items: center; padding: 8px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; background: none; color: inherit; font: inherit; text-align: left; }
+.row:hover { border-color: #3A416E; }
+.row .dot { color: #555C88; }
+.row.on .dot { color: #4BE3B5; }
+.row.focus .dot { color: var(--sun); }
+.row .st { color: #8C93C2; font-size: 12px; }
+.row.on .st { color: #4BE3B5; }
+.keys-line { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; border-top: 1px dashed #3A416E; padding-top: 10px; color: #8C93C2; font-size: 12px; align-items: center; }
+.key { font: 600 13px var(--mono); min-width: 32px; padding: 5px 9px; border-radius: 7px; background: #262B4D; color: #fff; border: 2px solid #3A416E; border-bottom-width: 4px; cursor: pointer; }
+.key:active { border-bottom-width: 2px; transform: translateY(2px); }
+.viewer { background: #0B0D13; position: relative; aspect-ratio: 16 / 10; max-width: 100%; }
+.stage { position: absolute; inset: 0; display: grid; gap: 8px; padding: 8px; }
+.stage.n1 { padding: 0; }
+.stage.n2 { grid-template-columns: 1fr 1fr; align-content: center; }
+.stage.n3 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.stage.n3 .tile:nth-child(3) { grid-column: 1 / span 2; justify-self: center; width: 50%; }
+.tile { position: relative; border-radius: 9px; overflow: hidden; background: #1A1D27; cursor: pointer; padding: 0; border: 0; display: block; width: 100%; min-height: 0; }
+.stage.n2 .tile { aspect-ratio: 16 / 9; }
+.stage.n1 .tile { border-radius: 0; height: 100%; }
+.tile svg { width: 100%; height: 100%; display: block; }
+.tile:hover { outline: 3px solid #5EAAFF; }
+.tile .lbl { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.72); color: #fff; font: 500 12px var(--body); padding: 3px 10px; border-radius: 99px; }
+.stage.n1 .tile .lbl { display: none; }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: #8A91A3; font-size: 14px; padding: 16px; }
+.empty b { display: block; color: #ECEFF4; font: 800 26px var(--display); }
+.hint { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.72); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 99px; white-space: nowrap; }
+.try { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font: 600 16px var(--body); }
+.try .arrow { font: 800 22px var(--display); color: var(--coral); }
+
+/* cheat sheet */
+.cheat { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.cheat h3 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; }
+.cap { font: 600 14px var(--mono); background: var(--card); border: 2.5px solid var(--line); border-bottom-width: 5px; border-radius: 9px; padding: 4px 10px; text-align: center; white-space: nowrap; justify-self: start; }
+.kv span { font-size: 15.5px; }
+
+/* fixes */
+.fixes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.fix { background: var(--card); border: 3px solid var(--line); border-radius: 18px; padding: 18px; display: grid; gap: 10px; align-content: start; }
+.fix svg { width: 64px; height: 64px; }
+.fix h3 { font-size: 21px; }
+.fix p { color: var(--soft); font-size: 15px; }
+.fix code, .say code, .kv code { font: 500 13.5px var(--mono); background: var(--blue-soft); padding: 1px 6px; border-radius: 6px; color: var(--ink); }
+
+.section-title { font-size: clamp(28px, 4.5vw, 40px); text-align: center; }
+footer { text-align: center; color: var(--soft); font-size: 14px; }
+
+/* svg ink helpers */
+.ink { stroke: var(--line); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+.f-card { fill: var(--card); } .f-blue { fill: var(--blue); } .f-sun { fill: var(--sun); } .f-mint { fill: var(--mint); }
+.f-coral { fill: var(--coral); } .f-blue-soft { fill: var(--blue-soft); } .f-ink { fill: var(--line); } .f-screen { fill: #14172B; }
+.f-soft { fill: var(--soft); }
+.t-ink { fill: var(--ink); font-family: var(--display); font-weight: 800; }
+.wave { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; }
+.flow { fill: none; stroke: var(--blue); stroke-width: 4; stroke-dasharray: 2 12; stroke-linecap: round; animation: flow 1.2s linear infinite; }
+@keyframes flow { to { stroke-dashoffset: -28; } }
+@media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+
+@media (max-width: 760px) {
+  .idea { grid-template-columns: 1fr; }
+  .split, .demo, .cheat { grid-template-columns: 1fr; }
+  .step { grid-template-columns: 1fr; gap: 12px; }
+  .num { width: 54px; height: 54px; font-size: 28px; }
+  .panel { padding: 18px; }
+}
+</style>
+</head>
+<body>
+<!-- Screen scenes shown on the fake devices -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="scene-face" viewBox="0 0 160 90">
+      <rect width="160" height="90" fill="#1B2140"/>
+      <circle cx="80" cy="40" r="17" fill="#F2C7A5"/>
+      <rect x="62" y="56" width="36" height="34" rx="12" fill="#3A86FF"/>
+      <circle cx="74" cy="38" r="2.3" fill="#1B2140"/><circle cx="86" cy="38" r="2.3" fill="#1B2140"/>
+      <path d="M73 47 q7 6 14 0" stroke="#1B2140" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <rect x="57" y="17" width="46" height="48" fill="none" stroke="#3DF2A0" stroke-width="2.5"/>
+      <rect x="57" y="9" width="40" height="9" fill="#3DF2A0"/>
+      <text x="60" y="16" font-size="7" font-family="monospace" fill="#0B0D13">face 98%</text>
+    </symbol>
+    <symbol id="scene-lane" viewBox="0 0 160 90">
+      <rect width="160" height="90" fill="#7FC8FF"/>
+      <rect y="42" width="160" height="48" fill="#6BBF59"/>
+      <path d="M60 42 L100 42 L150 90 L10 90 Z" fill="#4A4F5C"/>
+      <path d="M78 44 L68 90" stroke="#FFD23F" stroke-width="3"/>
+      <path d="M82 44 L92 90" stroke="#FFD23F" stroke-width="3"/>
+      <path d="M80 50 L80 58 M80 66 L80 76" stroke="#fff" stroke-width="2.5"/>
+      <path d="M64 42 L22 90 M96 42 L138 90" stroke="#3DF2A0" stroke-width="2.5"/>
+      <circle cx="130" cy="18" r="9" fill="#FFE27A"/>
+    </symbol>
+    <symbol id="scene-pose" viewBox="0 0 160 90">
+      <rect width="160" height="90" fill="#2A1F3D"/>
+      <g stroke="#FF6B9E" stroke-width="3" stroke-linecap="round" fill="none">
+        <path d="M80 30 L80 58 M80 38 L62 26 M80 38 L100 30 M80 58 L66 80 M80 58 L94 80"/>
+      </g>
+      <circle cx="80" cy="20" r="8" fill="none" stroke="#FF6B9E" stroke-width="3"/>
+      <g fill="#FFD23F"><circle cx="80" cy="38" r="3"/><circle cx="62" cy="26" r="3"/><circle cx="100" cy="30" r="3"/><circle cx="80" cy="58" r="3"/><circle cx="66" cy="80" r="3"/><circle cx="94" cy="80" r="3"/></g>
+      <text x="8" y="14" font-size="7" font-family="monospace" fill="#FFD23F">pose: jumping!</text>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="badge">Setup guide</div>
+    <h1>Simple <span>Stream</span></h1>
+    <p class="lead">Show every project's screen in one Google Meet. Switch with one key.</p>
+    <svg class="hero-art" viewBox="0 0 900 330" role="img" aria-label="Three devices send their screens to a laptop, the laptop shares one window in a video call">
+      <!-- three devices -->
+      <g>
+        <rect class="ink f-card" x="20" y="20" width="150" height="92" rx="10"/>
+        <svg x="28" y="28" width="134" height="76"><use href="#scene-face"/></svg>
+        <rect class="ink f-mint" x="176" y="70" width="44" height="34" rx="6"/>
+        <text x="198" y="92" text-anchor="middle" font-size="11" class="t-ink">AI</text>
+      </g>
+      <g>
+        <rect class="ink f-card" x="20" y="122" width="150" height="92" rx="10"/>
+        <svg x="28" y="130" width="134" height="76"><use href="#scene-lane"/></svg>
+        <rect class="ink f-mint" x="176" y="172" width="44" height="34" rx="6"/>
+        <text x="198" y="194" text-anchor="middle" font-size="11" class="t-ink">AI</text>
+      </g>
+      <g>
+        <rect class="ink f-card" x="20" y="224" width="150" height="92" rx="10"/>
+        <svg x="28" y="232" width="134" height="76"><use href="#scene-pose"/></svg>
+        <rect class="ink f-mint" x="176" y="274" width="44" height="34" rx="6"/>
+        <text x="198" y="296" text-anchor="middle" font-size="11" class="t-ink">AI</text>
+      </g>
+      <!-- flows -->
+      <path class="flow" d="M226 80 C 300 80, 300 160, 360 160"/>
+      <path class="flow" d="M226 185 L 360 170"/>
+      <path class="flow" d="M226 290 C 300 290, 300 180, 360 180"/>
+      <!-- laptop -->
+      <rect class="ink f-card" x="370" y="80" width="200" height="130" rx="10"/>
+      <rect class="f-screen" x="382" y="92" width="176" height="106" rx="4"/>
+      <svg x="386" y="96" width="82" height="46"><use href="#scene-face"/></svg>
+      <svg x="472" y="96" width="82" height="46"><use href="#scene-lane"/></svg>
+      <svg x="429" y="148" width="82" height="46"><use href="#scene-pose"/></svg>
+      <path class="ink f-blue-soft" d="M350 210 H590 L604 234 H336 Z"/>
+      <text x="470" y="262" text-anchor="middle" font-size="18" class="t-ink">your laptop</text>
+      <!-- arrow to meet -->
+      <path class="flow" d="M606 150 L 668 150"/>
+      <!-- meet window -->
+      <rect class="ink" x="676" y="46" width="206" height="210" rx="14" fill="#202124"/>
+      <rect x="690" y="62" width="178" height="100" rx="6" fill="#0B0D13"/>
+      <svg x="694" y="66" width="84" height="46"><use href="#scene-face"/></svg>
+      <svg x="780" y="66" width="84" height="46"><use href="#scene-lane"/></svg>
+      <svg x="737" y="114" width="84" height="46"><use href="#scene-pose"/></svg>
+      <g>
+        <rect x="690" y="172" width="40" height="34" rx="6" fill="#3C4043"/><circle cx="710" cy="185" r="6" fill="#F2C7A5"/><rect x="702" y="193" width="16" height="10" rx="5" fill="#FF5E5B"/>
+        <rect x="736" y="172" width="40" height="34" rx="6" fill="#3C4043"/><circle cx="756" cy="185" r="6" fill="#C98E6B"/><rect x="748" y="193" width="16" height="10" rx="5" fill="#19B89A"/>
+        <rect x="782" y="172" width="40" height="34" rx="6" fill="#3C4043"/><circle cx="802" cy="185" r="6" fill="#F2C7A5"/><rect x="794" y="193" width="16" height="10" rx="5" fill="#FFC933"/>
+        <rect x="828" y="172" width="40" height="34" rx="6" fill="#3C4043"/><circle cx="848" cy="185" r="6" fill="#8D5A3B"/><rect x="840" y="193" width="16" height="10" rx="5" fill="#2F6BFF"/>
+      </g>
+      <rect x="752" y="220" width="54" height="22" rx="11" fill="#EA4335"/>
+      <text x="779" y="288" text-anchor="middle" font-size="18" class="t-ink">the meeting</text>
+    </svg>
+  </header>
+
+  <!-- THE IDEA -->
+  <section class="panel" aria-label="The idea">
+    <div class="idea">
+      <div>
+        <svg viewBox="0 0 180 120" aria-hidden="true">
+          <rect class="ink f-card" x="10" y="14" width="110" height="72" rx="8"/>
+          <svg x="18" y="22" width="94" height="56"><use href="#scene-lane"/></svg>
+          <rect class="ink f-mint" x="126" y="54" width="44" height="34" rx="6"/>
+          <path class="ink" d="M65 86 V104 M45 106 H85" fill="none"/>
+        </svg>
+        <b>Each device = a TV channel</b>
+        <small>It waits quietly until you pick it.</small>
+      </div>
+      <div>
+        <svg viewBox="0 0 180 120" aria-hidden="true">
+          <rect class="ink f-card" x="60" y="6" width="60" height="108" rx="16"/>
+          <circle class="ink f-coral" cx="90" cy="28" r="9"/>
+          <g class="ink f-blue-soft">
+            <rect x="70" y="46" width="16" height="14" rx="4"/><rect x="94" y="46" width="16" height="14" rx="4"/>
+            <rect x="70" y="66" width="16" height="14" rx="4"/><rect x="94" y="66" width="16" height="14" rx="4"/>
+          </g>
+          <text x="78" y="57" text-anchor="middle" font-size="11" class="t-ink">1</text>
+          <text x="102" y="57" text-anchor="middle" font-size="11" class="t-ink">2</text>
+          <text x="78" y="77" text-anchor="middle" font-size="11" class="t-ink">3</text>
+          <text x="102" y="77" text-anchor="middle" font-size="11" class="t-ink">4</text>
+          <rect class="ink f-sun" x="72" y="88" width="36" height="16" rx="8"/>
+        </svg>
+        <b>Your laptop = the remote</b>
+        <small>Press a number to change channel.</small>
+      </div>
+      <div>
+        <svg viewBox="0 0 180 120" aria-hidden="true">
+          <rect class="ink" x="20" y="10" width="140" height="92" rx="12" fill="#202124"/>
+          <rect x="30" y="20" width="120" height="58" rx="4" fill="#0B0D13"/>
+          <svg x="34" y="23" width="112" height="52"><use href="#scene-pose"/></svg>
+          <circle cx="50" cy="90" r="6" fill="#3C4043"/><circle cx="70" cy="90" r="6" fill="#3C4043"/><rect x="84" y="84" width="30" height="12" rx="6" fill="#EA4335"/>
+        </svg>
+        <b>Meet shows one window</b>
+        <small>Share it once, keep switching.</small>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="steps-title">Set it up in 6 steps</h2>
+
+  <!-- STEP 1 -->
+  <section class="panel step s1">
+    <div class="num">1</div>
+    <div class="step-body">
+      <h2>Same Wi-Fi for everyone</h2>
+      <div class="split">
+        <div style="display:grid;gap:14px">
+          <p class="say">All devices and your laptop join the same router or phone hotspot.</p>
+          <div class="checks">
+            <span class="check"><i>✓</i>Jetson Nano</span>
+            <span class="check"><i>✓</i>Jetson Xavier</span>
+            <span class="check"><i>✓</i>Other laptops</span>
+            <span class="check"><i>✓</i>Your laptop</span>
+          </div>
+          <div class="tip"><b>Heads up</b><span>School or office Wi-Fi often blocks devices from seeing each other. A phone hotspot always works.</span></div>
+        </div>
+        <svg viewBox="0 0 320 200" role="img" aria-label="A router with devices around it">
+          <path class="wave" d="M130 60 q30 -26 60 0"/><path class="wave" d="M116 44 q44 -40 88 0"/>
+          <rect class="ink f-blue" x="110" y="80" width="100" height="40" rx="10"/>
+          <path class="ink" d="M130 80 V60 M190 80 V60" fill="none"/>
+          <circle cx="135" cy="100" r="5" fill="#7CF2C9"/><circle cx="152" cy="100" r="5" fill="#7CF2C9"/><circle cx="169" cy="100" r="5" fill="#FFC933"/>
+          <g class="ink f-mint"><rect x="14" y="140" width="56" height="40" rx="6"/><rect x="92" y="150" width="56" height="40" rx="6"/><rect x="172" y="150" width="56" height="40" rx="6"/></g>
+          <rect class="ink f-card" x="246" y="136" width="64" height="40" rx="5"/><path class="ink f-blue-soft" d="M240 176 H316 L322 186 H234 Z"/>
+          <path d="M42 140 L135 120 M120 150 L150 120 M200 150 L170 120 M278 136 L190 120" stroke="var(--blue)" stroke-width="3" stroke-dasharray="3 7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel step s2">
+    <div class="num">2</div>
+    <div class="step-body">
+      <h2>On each device: paste one line</h2>
+      <p class="say">Open a terminal on the Jetson and paste this. Change the name to your project's name.</p>
+      <div class="cmd">
+        <code id="c-client"><span class="p">$ </span>curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/client.sh | bash -s -- --name <span class="hl">"Face detection"</span></code>
+        <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/client.sh | bash -s -- --name &quot;Face detection&quot;">Copy</button>
+      </div>
+      <div class="split">
+        <div class="tip"><b>Do it once</b><span>After this the device turns it on by itself every time it starts. Nothing to remember.</span></div>
+        <svg viewBox="0 0 320 130" role="img" aria-label="Three devices with name tags">
+          <g class="ink f-mint"><rect x="10" y="40" width="80" height="54" rx="8"/><rect x="120" y="40" width="80" height="54" rx="8"/><rect x="230" y="40" width="80" height="54" rx="8"/></g>
+          <g fill="#0E4D40"><rect x="22" y="52" width="24" height="18" rx="3"/><rect x="132" y="52" width="24" height="18" rx="3"/><rect x="242" y="52" width="24" height="18" rx="3"/></g>
+          <g class="ink f-sun"><rect x="2" y="100" width="100" height="24" rx="12"/><rect x="110" y="100" width="100" height="24" rx="12"/><rect x="218" y="100" width="100" height="24" rx="12"/></g>
+          <text x="52" y="116" text-anchor="middle" font-size="10.5" fill="#1A1E3A" font-family="Baloo 2, sans-serif" font-weight="800">Face detection</text>
+          <text x="160" y="116" text-anchor="middle" font-size="10.5" fill="#1A1E3A" font-family="Baloo 2, sans-serif" font-weight="800">Lane tracking</text>
+          <text x="268" y="116" text-anchor="middle" font-size="10.5" fill="#1A1E3A" font-family="Baloo 2, sans-serif" font-weight="800">Pose estimation</text>
+          <path class="wave" d="M36 30 q14 -12 28 0"/><path class="wave" d="M146 30 q14 -12 28 0"/><path class="wave" d="M256 30 q14 -12 28 0"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel step s3">
+    <div class="num">3</div>
+    <div class="step-body">
+      <h2>On your laptop: paste this line</h2>
+      <p class="say">This is the laptop you join the meeting from.</p>
+      <div class="cmd">
+        <code id="c-server"><span class="p">$ </span>curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/server.sh | bash</code>
+        <button class="copy" data-copy="curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/server.sh | bash">Copy</button>
+      </div>
+      <div class="tip"><b>Takes a minute</b><span>It downloads a few things. Wait for the green <b style="font-family:var(--body);font-size:inherit;color:var(--mint)">✔ installed</b>.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="panel step s4">
+    <div class="num">4</div>
+    <div class="step-body">
+      <h2>Type <code style="font:600 0.8em var(--mono);background:var(--coral-soft);padding:2px 10px;border-radius:8px">simplestream</code></h2>
+      <p class="say">Two things open: a list of devices in the terminal, and a big window called <b>Simple Stream</b>.</p>
+      <div class="cmd">
+        <code><span class="p">$ </span>simplestream</code>
+        <button class="copy" data-copy="simplestream">Copy</button>
+      </div>
+      <svg viewBox="0 0 640 200" role="img" aria-label="The terminal list and the viewer window side by side" style="width:100%;height:auto">
+        <rect class="ink" x="4" y="10" width="290" height="180" rx="12" fill="#14172B"/>
+        <text x="20" y="40" font-family="monospace" font-size="13" fill="#8C93C2">#  Device</text>
+        <text x="20" y="72" font-family="monospace" font-size="14" fill="#E6E9FF"><tspan fill="#4BE3B5">1 ●</tspan> Face detection</text>
+        <text x="20" y="100" font-family="monospace" font-size="14" fill="#E6E9FF"><tspan fill="#555C88">2 ○</tspan> Lane tracking</text>
+        <text x="20" y="128" font-family="monospace" font-size="14" fill="#E6E9FF"><tspan fill="#555C88">3 ○</tspan> Pose estimation</text>
+        <text x="20" y="172" font-family="monospace" font-size="12" fill="#8C93C2">devices pop up by themselves ✨</text>
+        <path d="M300 100 L 336 100" stroke="var(--coral)" stroke-width="4" stroke-linecap="round"/><path d="M328 90 L338 100 L328 110" fill="none" stroke="var(--coral)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect class="ink" x="346" y="10" width="290" height="180" rx="12" fill="#0B0D13"/>
+        <rect x="349" y="13" width="284" height="22" rx="9" fill="var(--blue-soft)"/>
+        <text x="362" y="29" font-size="12" font-family="var(--body)" fill="var(--ink)">Simple Stream</text>
+        <svg x="352" y="38" width="278" height="148"><use href="#scene-face"/></svg>
+      </svg>
+      <div class="tip"><b>Nothing showing?</b><span>Give it 5 seconds. Still empty? Jump to <a href="#fixes" style="color:var(--blue)">Uh-oh fixes</a>.</span></div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="panel step s5">
+    <div class="num">5</div>
+    <div class="step-body">
+      <h2>In Meet: share the window</h2>
+      <p class="say">Click <b>Present</b>, pick <b>A window</b>, choose <b>Simple Stream</b>. Done. Leave it shared the whole time.</p>
+      <div class="meet" role="img" aria-label="Google Meet: Present now, A window, Simple Stream">
+        <div class="meet-top"><span>Science fair demo</span><span>12:04</span></div>
+        <div class="meet-flow"><span>Present now</span><em>→</em><span>A window</span><em>→</em><span class="pick">Simple Stream</span></div>
+        <div class="meet-bar"><i>🎤</i><i>📷</i><i class="present">⬆</i><i class="end">📞</i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 6: interactive -->
+  <section class="panel step s6" id="demo">
+    <div class="num">6</div>
+    <div class="step-body">
+      <h2>Pick what everyone sees</h2>
+      <div class="try"><span class="arrow">↓</span> Try it here. Click a name, press <kbd class="cap">1</kbd> <kbd class="cap">2</kbd> <kbd class="cap">3</kbd>, or click a picture.</div>
+      <div class="demo">
+        <div class="win">
+          <div class="win-bar"><i></i><i></i><i></i><span>Terminal</span></div>
+          <div class="term">
+            <div class="head"><span>#</span><span></span><span>Device</span><span>status</span></div>
+            <div id="rows"></div>
+            <div class="keys-line">
+              <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+              <button class="key" data-key="a">all</button><button class="key" data-key="g">g</button><button class="key" data-key="c">c</button>
+            </div>
+          </div>
+        </div>
+        <div class="win">
+          <div class="win-bar"><i></i><i></i><i></i><span>Simple Stream (this is what Meet sees)</span></div>
+          <div class="viewer"><div class="stage" id="stage"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHEAT SHEET -->
+  <section class="panel" aria-label="Cheat sheet">
+    <h2 class="section-title">Cheat sheet</h2>
+    <div class="cheat">
+      <div style="display:grid;gap:14px">
+        <h3>⌨️ In the terminal</h3>
+        <div class="kv">
+          <kbd class="cap">1 – 9</kbd><span>Show only that device</span>
+          <kbd class="cap">Space</kbd><span>Add / remove from the grid</span>
+          <kbd class="cap">f</kbd><span>Make it fill the window</span>
+          <kbd class="cap">g</kbd><span>Back to the grid</span>
+          <kbd class="cap">n</kbd><span>Rename a device</span>
+          <kbd class="cap">v</kbd><span>Reopen the window</span>
+          <kbd class="cap">q</kbd><span>Quit</span>
+        </div>
+      </div>
+      <div style="display:grid;gap:14px">
+        <h3>🖱️ In the window</h3>
+        <div class="kv">
+          <kbd class="cap">click</kbd><span>Fill the window with it</span>
+          <kbd class="cap">click again</kbd><span>Back to the grid</span>
+          <kbd class="cap">Esc</kbd><span>Back to the grid</span>
+          <kbd class="cap">F11</kbd><span>Fullscreen</span>
+          <kbd class="cap">l</kbd><span>Hide the name labels</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIXES -->
+  <h2 class="section-title" id="fixes">Uh-oh fixes</h2>
+  <div class="fixes">
+    <div class="fix">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="ink f-coral" cx="32" cy="32" r="26"/><path d="M20 22 q12 -10 24 0 M24 30 q8 -6 16 0" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M18 46 L46 18" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>
+      <h3>Device not in the list</h3>
+      <p>Same Wi-Fi? Press <code>r</code> to look again. Or press <code>a</code> and type its IP.</p>
+    </div>
+    <div class="fix">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect class="ink" x="6" y="12" width="52" height="34" rx="5" fill="#14172B"/><path class="ink" d="M32 46 V54 M22 56 H42" fill="none"/><text x="32" y="35" text-anchor="middle" font-size="14" fill="#fff" font-weight="800">?</text></svg>
+      <h3>Black picture</h3>
+      <p>On the device's login screen, click the ⚙️ and pick <b>Ubuntu on Xorg</b>.</p>
+    </div>
+    <div class="fix">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="ink f-sun" cx="32" cy="24" r="12"/><path class="ink f-sun" d="M12 58 q20 -30 40 0 Z"/></svg>
+      <h3>"No desktop session"</h3>
+      <p>Someone must be logged in on the device. Turn on auto-login on the Jetsons.</p>
+    </div>
+    <div class="fix">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect class="ink f-mint" x="10" y="16" width="44" height="32" rx="6"/><rect x="18" y="24" width="14" height="10" rx="2" fill="#0E4D40"/><circle cx="44" cy="30" r="4" fill="#fff"/></svg>
+      <h3>Check a device</h3>
+      <p>On the device, type <code>simplestream-client</code>. Green dot = all good.</p>
+    </div>
+  </div>
+
+  <footer>Simple Stream · github.com/haneeshbyreddy/simple_stream</footer>
+</main>
+
+<script>
+(function () {
+  // copy buttons
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = btn.getAttribute('data-copy');
+      var done = function () { btn.textContent = 'Copied!'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+      var fallback = function () {
+        var code = btn.previousElementSibling, r = document.createRange();
+        r.selectNodeContents(code); var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = 'Press Ctrl+C';
+      };
+      try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+    });
+  });
+
+  // interactive demo
+  var devices = [
+    { id: 'face', name: 'Face detection', scene: 'scene-face' },
+    { id: 'lane', name: 'Lane tracking', scene: 'scene-lane' },
+    { id: 'pose', name: 'Pose estimation', scene: 'scene-pose' }
+  ];
+  var stage = ['face', 'lane'], focus = null, hintUntil = 0;
+  var rowsEl = document.getElementById('rows'), stageEl = document.getElementById('stage');
+
+  function byId(id) { return devices.filter(function (d) { return d.id === id; })[0]; }
+  function render() {
+    rowsEl.innerHTML = '';
+    devices.forEach(function (d, i) {
+      var on = stage.indexOf(d.id) >= 0;
+      var b = document.createElement('button');
+      b.className = 'row' + (on ? ' on' : '') + (focus === d.id ? ' focus' : '');
+      b.innerHTML = '<span>' + (i + 1) + '</span><span class="dot">' + (focus === d.id ? '◉' : on ? '●' : '○') +
+        '</span><span>' + d.name + '</span><span class="st">' + (on ? 'live' : 'online') + '</span>';
+      b.addEventListener('click', function () { toggle(d.id); });
+      rowsEl.appendChild(b);
+    });
+    var shown = focus ? [focus] : stage;
+    stageEl.className = 'stage n' + Math.min(shown.length, 3);
+    stageEl.innerHTML = '';
+    if (!shown.length) {
+      stageEl.innerHTML = '<div class="empty"><div><b>Simple Stream</b>Pick a device in the terminal</div></div>';
+      return;
+    }
+    shown.forEach(function (id, i) {
+      var d = byId(id);
+      var t = document.createElement('button');
+      t.className = 'tile';
+      t.setAttribute('aria-label', d.name);
+      t.innerHTML = '<svg viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice"><use href="#' + d.scene + '"/></svg><span class="lbl">' + (i + 1) + '  ' + d.name + '</span>';
+      t.addEventListener('click', function () {
+        if (focus || stage.length < 2) { focus = null; } else { focus = id; hintUntil = Date.now() + 2200; }
+        render();
+      });
+      stageEl.appendChild(t);
+    });
+    if (focus && stage.length > 1 && Date.now() < hintUntil) {
+      var h = document.createElement('div'); h.className = 'hint'; h.textContent = byId(focus).name + ' · click or Esc for grid';
+      stageEl.appendChild(h);
+      setTimeout(render, hintUntil - Date.now() + 20);
+    }
+  }
+  function toggle(id) {
+    var i = stage.indexOf(id);
+    if (i >= 0) { stage.splice(i, 1); if (focus === id) focus = null; } else stage.push(id);
+    render();
+  }
+  function key(k) {
+    if (k >= '1' && k <= '3') { stage = [devices[+k - 1].id]; focus = null; }
+    else if (k === 'a') { stage = devices.map(function (d) { return d.id; }); focus = null; }
+    else if (k === 'g' || k === 'Escape') { focus = null; }
+    else if (k === 'c') { stage = []; focus = null; }
+    else return false;
+    render(); return true;
+  }
+  document.querySelectorAll('.key').forEach(function (b) { b.addEventListener('click', function () { key(b.getAttribute('data-key')); }); });
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (['1', '2', '3', 'g', 'Escape', 'c'].indexOf(e.key) >= 0) key(e.key);
+  });
+  render();
+})();
+</script>
+
+</body>
+</html>
