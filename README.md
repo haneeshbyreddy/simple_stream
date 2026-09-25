@@ -3,10 +3,10 @@
 Show the screens of your edge devices (Jetson Nano, Jetson Xavier, Linux laptops…) on the laptop you
 present from, then share that one window in Google Meet / Zoom / Teams.
 
-- **Client** (each edge device): one tiny Python file with no dependencies besides ffmpeg. While
+- **Client** (`client.sh`, each edge device): a tiny Python program with no dependencies besides ffmpeg. While
   nobody is watching it only sends a small "I'm here" packet every 2 s. It captures the screen only while
   the presenter is actually showing it. On Jetsons it uses the hardware H.264 encoder.
-- **Server** (presenting laptop): a terminal app that **finds devices automatically** (like LocalSend)
+- **Server** (`server.sh`, presenting laptop): a terminal app that **finds devices automatically** (like LocalSend)
   plus a viewer window with a grid of the selected devices. **Click a tile to fill the window with it**,
   click again to go back to the grid.
 
@@ -15,32 +15,40 @@ present from, then share that one window in Google Meet / Zoom / Teams.
 
 ## Install
 
+Two scripts, one per role. Each installs a command-line app.
+
 **On every edge device** (Jetson / Linux with an X11 desktop):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/install.sh | bash -s -- client --name "Face detection"
+curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/client.sh | bash -s -- --name "Face detection"
 ```
-
-`--name` is what the audience sees (default: the hostname). The client runs as a service, starts on boot
-and restarts itself if anything goes wrong.
 
 **On the presenting laptop** (Ubuntu 22.04+ or any Linux with Python 3.10+):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/install.sh | bash -s -- server
+curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/server.sh | bash
 ```
 
 All devices must be on the same network as the laptop (same router or phone hotspot).
+Run the same command again to update.
 
-## Present
+## Use
 
-1. Run `simplestream` (or open **Simple Stream** from the app menu). Devices show up by themselves,
-   and the **Simple Stream** viewer window opens.
+### Laptop: `simplestream`
+
+```
+simplestream                  open the device picker + the viewer window
+simplestream list             list the devices on the network
+simplestream show lane jetson open just the viewer with these devices (name, hostname or IP)
+simplestream uninstall
+```
+
+1. Run `simplestream`. Devices show up by themselves, and the **Simple Stream** viewer window opens.
 2. In Meet: *Present → A window → Simple Stream*. The window stays open the whole time, so the
    share never breaks while you switch devices.
 3. Pick what to show from the terminal:
 
-| Key | In the terminal |
+| Key | In the picker |
 |---|---|
 | `1`…`9` | show only device N (fastest way to switch between projects) |
 | `Enter` | show only the highlighted device |
@@ -58,16 +66,27 @@ All devices must be on the same network as the laptop (same router or phone hots
 | `F11` or `f` | fullscreen |
 | `l` | hide/show the name labels |
 
+### Device: `simplestream-client`
+
+It runs as a background service that starts on boot, so normally you never touch it.
+
+```
+simplestream-client                     status: name, address, running or not
+simplestream-client name "Face detection"
+simplestream-client start | stop | restart | logs
+simplestream-client uninstall
+```
+
 ## How it works
 
 ```
  edge device                                   presenting laptop
 ┌─────────────────────────┐   UDP beacon     ┌───────────────────────────┐
-│ client.py               │ ───────────────▶ │ tui.py (discovery.py)     │
+│ simplestream-client     │ ───────────────▶ │ simplestream (picker)     │
 │  every 2 s: 224.0.0.177 │   port 47800     │   device list, stage      │
 │  + broadcast, all NICs  │                  │        │ JSON over stdin  │
 │                         │  HTTP GET        │        ▼                  │
-│  :47801/stream ─────────│ ◀─────────────── │ viewer.py (pygame + PyAV) │
+│  :47801/stream ─────────│ ◀─────────────── │ viewer (pygame + PyAV)    │
 │  ffmpeg x11grab + x264  │  raw H.264 ────▶ │   grid, click to fill     │──▶ share in Meet
 │  or Jetson HW encoder   │                  └───────────────────────────┘
 └─────────────────────────┘
@@ -83,7 +102,7 @@ All devices must be on the same network as the laptop (same router or phone hots
 
 ## Client settings
 
-`/etc/simplestream.conf` on the device (then `sudo systemctl restart simplestream`):
+`/etc/simplestream.conf` on the device (then `simplestream-client restart`):
 
 ```bash
 SS_NAME="Face detection"
@@ -99,25 +118,15 @@ SS_ENCODER=auto        # auto | jetson | x264
 
 - **Device doesn't appear**: check it's on the same network (`hostname -I` on both). Guest/campus Wi-Fi
   often blocks devices from talking to each other; use your own router or a phone hotspot. Press `r` to
-  rescan or `a` to type its IP. Check the client: `systemctl status simplestream`.
+  rescan or `a` to type its IP. Check the device with `simplestream-client`.
 - **"no desktop session"**: somebody has to be logged in on the device's desktop (enable auto-login on Jetsons).
 - **Black picture / Wayland warning**: screen capture needs an X11 session. On the login screen pick
   *Ubuntu on Xorg* (gear icon). Jetsons use X11 already.
-- **Logs**: `journalctl -u simplestream -f` on the device, `~/.cache/simplestream/viewer.log` on the laptop.
+- **Logs**: `simplestream-client logs` on the device, `~/.cache/simplestream/viewer.log` on the laptop.
 
 **Security**: there is no password. Anyone on the same network can view a device's screen while the client
-is running. Use a private network, and stop it after the event with `sudo systemctl disable --now simplestream`.
+is running. Use a private network, and stop it after the event with `simplestream-client stop` (or `uninstall`).
 
 ## Uninstall
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/haneeshbyreddy/simple_stream/main/install.sh | bash -s -- uninstall
-```
-
-## Run from a checkout
-
-```bash
-python3 client.py                                   # client (needs ffmpeg)
-pip install textual av pygame-ce && python3 server/tui.py   # server
-./install.sh client|server                          # install from the local files
-```
+`simplestream uninstall` on the laptop, `simplestream-client uninstall` on a device.
